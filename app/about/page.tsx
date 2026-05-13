@@ -49,6 +49,113 @@ const FlipGift = ({ text }: { text: string }) => {
   );
 };
 
+
+
+
+// تعريف واجهة (Interface) لشكل الـ State
+interface MascotState {
+  msg: string;
+  anim: any; // استخدمنا any هنا لتسهيل التعامل مع قيم framer-motion العشوائية
+}
+
+const MascotChat: React.FC = () => {
+  // تحديد أنواع الـ States بدقة
+  const [bearState, setBearState] = useState<MascotState>({ msg: "", anim: {} });
+  const [rabbitState, setRabbitState] = useState<MascotState>({ msg: "", anim: {} });
+  
+  const [usedMsgs, setUsedMsgs] = useState<string[]>([]);
+  const [usedAnims, setUsedAnims] = useState<any[]>([]);
+
+  const allMessages: string[] = [
+    "يا لوز مقشر يا نور! ✨", "يومك سكر زي ضحكتك يا نوارة 🌸", "أنا والكتكوت بنحبك جداً يا نور 🧸🐰",
+    "إيه الشياكة دي يا نور النهاردة؟ 😎", "ضحكتك بتنور الكوكب والله يا نور 🌍", "يا أجمل دكتورة في المجرة 🩺✨",
+    "الرقة والجمال اتجمعوا فيكي يا نور", "نور.. أنتي بجد شخصية مفيش منها اتنين", "القمر بيغير منك ومن جمالك يا نور 🌙",
+    "يا أرقى بنت شافتها عيني 🎀", "كل سنة وأنتي طيبة يا أحلى نور في الدنيا! 🎂", "عيد ميلاد سعيد يا نور، كبرتي سنة وبقيتي أجمل 🎈",
+    "نور.. أتمنى ليكي سنة كلها سعادة وتحقيق أحلام ✨", "النهاردة عيد ميلاد أجمل بنت 🎊", "يا رب تكون سنة بيضا وسعيدة عليكي يا نور 🤍",
+    "كبرتي سنة يا نور بس لسه قمر زي ما أنتي 🎂", "نور.. أنتي قوية وتقدري تعملي أي حاجة 💪", "لو الدنيا ضلمت.. نور موجودة تنورها 💡",
+    "العصفور بيقولك كلي جزر.. والدبدوب بيقولك أنتي عسل 🍯", "يا بخت اللي يعرفك يا نور، والله محظوظ!", "دايماً رافعة راسنا يا أحلى دكتورة نور 💉",
+    "نور.. أنتي رزق كبير لكل اللي حواليكي ✨", "جمالك يا نور بيخطف الأنظار دايماً 💖", "قلبك أبيض وأطيب قلب شفته يا نوارة",
+    "يا ست البنات يا نور، ربنا يحميكي", "أنتي نجمة بتلمع في سما كل اللي بيحبوكي", "نور.. وجودك بيخلي كل حاجة أحلى",
+    "صباح الجمال على عيون أجمل نور في الوجود", "أنتي أجمل صدفة حصلت في الحياة", "خليكي واثقة في نفسك.. أنتي مفيش زيك يا نور"
+  ];
+
+  const animations: any[] = [
+    { rotate: [0, -15, 15, 0] }, { y: [0, -20, 0] }, { scale: [1, 1.2, 1] }, { skew: [0, 10, -10, 0] }, { rotate: [0, 360] }
+  ];
+
+  // تحديد أنواع المعاملات (Parameters) للدالة
+  const getRandomItem = (fullList: any[], usedList: any[], setUsedList: React.Dispatch<React.SetStateAction<any[]>>) => {
+    let available = fullList.filter(item => !usedList.includes(item));
+    if (available.length === 0) {
+      available = fullList;
+      setUsedList([]);
+    }
+    const picked = available[Math.floor(Math.random() * available.length)];
+    setUsedList(prev => [...prev, picked]);
+    return picked;
+  };
+
+  const handleAction = (type: 'bear' | 'rabbit') => {
+    const currentState = type === 'bear' ? bearState : rabbitState;
+    
+    if (currentState.msg) {
+      const closeMsg = "افتحي تاني لسه كتير.. " + (type === 'bear' ? "🧸" : "🐰");
+      if (type === 'bear') setBearState({ msg: closeMsg, anim: {} });
+      else setRabbitState({ msg: closeMsg, anim: {} });
+      
+      setTimeout(() => {
+        if (type === 'bear') setBearState({ msg: "", anim: {} });
+        else setRabbitState({ msg: "", anim: {} });
+      }, 2000);
+      return;
+    }
+
+    const randomMsg = getRandomItem(allMessages, usedMsgs, setUsedMsgs);
+    const randomAnim = getRandomItem(animations, usedAnims, setUsedAnims);
+
+    if (type === 'bear') setBearState({ msg: randomMsg, anim: randomAnim });
+    else setRabbitState({ msg: randomMsg, anim: randomAnim });
+
+    setTimeout(() => {
+      if (type === 'bear') setBearState(prev => ({ ...prev, msg: "" }));
+      else setRabbitState(prev => ({ ...prev, msg: "" }));
+    }, 7000);
+  };
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', gap: '50px', margin: '40px auto', alignItems: 'flex-end', backgroundColor: 'rgba(255, 255, 255, 0.3)', padding: '30px 10px', borderRadius: '40px', maxWidth: '600px', backdropFilter: 'blur(10px)', border: '2px solid white' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '160px' }}>
+        <AnimatePresence>
+          {bearState.msg && (
+            <motion.div initial={{ opacity: 0, y: 10, scale: 0.5 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }} style={{ background: 'white', padding: '10px', borderRadius: '15px', border: '2px solid #D2B48C', fontSize: '14px', marginBottom: '10px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', color: '#5D4037', fontWeight: 'bold', textAlign: 'center' }}>
+              {bearState.msg}
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <motion.div onClick={() => handleAction('bear')} animate={bearState.msg ? bearState.anim : {}} transition={{ repeat: bearState.msg ? Infinity : 0, duration: 1.5 }} style={{ fontSize: '80px', cursor: 'pointer', userSelect: 'none' }}>
+          🧸
+        </motion.div>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '160px' }}>
+        <AnimatePresence>
+          {rabbitState.msg && (
+            <motion.div initial={{ opacity: 0, y: 10, scale: 0.5 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }} style={{ background: 'white', padding: '10px', borderRadius: '15px', border: '2px solid #D2B48C', fontSize: '14px', marginBottom: '10px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', color: '#5D4037', fontWeight: 'bold', textAlign: 'center' }}>
+              {rabbitState.msg}
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <motion.div onClick={() => handleAction('rabbit')} animate={rabbitState.msg ? rabbitState.anim : {}} transition={{ repeat: rabbitState.msg ? Infinity : 0, duration: 1.5 }} style={{ fontSize: '80px', cursor: 'pointer', userSelect: 'none' }}>
+          🐥
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
+
+
+
 export default function ManarProject() {
   const [content, setContent] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -231,6 +338,8 @@ export default function ManarProject() {
           
         </div>
       </div>
+
+      <MascotChat />
       <footer style={{ textAlign: 'center', padding: '40px', fontSize: '28px', fontWeight: 'bold', color: '#5D4037' }}>
         Made with ❤️ for Nour
       </footer>
